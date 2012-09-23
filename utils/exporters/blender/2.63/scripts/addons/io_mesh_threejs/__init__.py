@@ -23,9 +23,9 @@
 
 bl_info = {
     "name": "three.js format",
-    "author": "mrdoob, kikko, alteredq, remoe, pxf, n3tfr34k",
-    "version": (1, 4, 0),
-    "blender": (2, 6, 3),
+    "author": "mrdoob, kikko, alteredq, remoe, pxf, n3tfr34k, apendua",
+    "version": (1, 3, 0),
+    "blender": (2, 6, 0),
     "api": 35622,
     "location": "File > Import-Export",
     "description": "Import-Export three.js meshes",
@@ -202,6 +202,7 @@ def save_settings_export(properties):
 
     "option_animation_morph" : properties.option_animation_morph,
     "option_animation_skeletal" : properties.option_animation_skeletal,
+    "option_all_actions" : properties.option_all_actions,
 
     "option_frame_step" : properties.option_frame_step,
     "option_all_meshes" : properties.option_all_meshes,
@@ -264,7 +265,8 @@ def restore_settings_export(properties):
 
     properties.option_animation_morph = settings.get("option_animation_morph", False)
     properties.option_animation_skeletal = settings.get("option_animation_skeletal", False)
-
+    properties.option_all_actions = settings.get("option_all_actions", False)
+    
     properties.option_frame_step = settings.get("option_frame_step", 1)
     properties.option_all_meshes = settings.get("option_all_meshes", True)
 
@@ -312,6 +314,7 @@ class ExportTHREEJS(bpy.types.Operator, ExportHelper):
 
     option_animation_morph = BoolProperty(name = "Morph animation", description = "Export animation (morphs)", default = False)
     option_animation_skeletal = BoolProperty(name = "Skeletal animation", description = "Export animation (skeletal)", default = False)
+    option_all_actions = BoolProperty(name = "All actions", description = "All actions", default = True)
 
     option_frame_step = IntProperty(name = "Frame step", description = "Animation frame step", min = 1, max = 1000, soft_min = 1, soft_max = 1000, default = 1)
     option_all_meshes = BoolProperty(name = "All meshes", description = "All meshes (merged)", default = True)
@@ -361,11 +364,11 @@ class ExportTHREEJS(bpy.types.Operator, ExportHelper):
         row = layout.row()
         row.prop(self.properties, "option_normals")
         layout.separator()
-
+        
         row = layout.row()
         row.prop(self.properties, "option_bones")
         row.prop(self.properties, "option_skinning")
-        layout.separator()
+        layout.separator()        
 
         row = layout.row()
         row.label(text="Materials:")
@@ -412,6 +415,8 @@ class ExportTHREEJS(bpy.types.Operator, ExportHelper):
         row.prop(self.properties, "option_animation_skeletal")
         row = layout.row()
         row.prop(self.properties, "option_frame_step")
+        row = layout.row()
+        row.prop(self.properties, "option_all_actions")
         layout.separator()
 
         row = layout.row()
