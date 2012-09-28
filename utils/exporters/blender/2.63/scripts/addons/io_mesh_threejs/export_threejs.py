@@ -777,7 +777,9 @@ def generate_indices_and_weights(meshes, skeleton, option_skinning=True):
 # ##############################################################################
 
 def generate_animation(action, skeleton, option_animation_skeletal, option_frame_step):
-
+    
+    PRETTY_KEYFRAMES = False
+    
     if not option_animation_skeletal or not action or not skeleton:
         return ""
 
@@ -810,51 +812,58 @@ def generate_animation(action, skeleton, option_animation_skeletal, option_frame
             }\
 """
 
-    #TEMPLATE_KEYFRAME_FULL  = '{"time":%g,"pos":[%g,%g,%g],"rot":[%g,%g,%g,%g],"scl":[1,1,1]}'
-    #TEMPLATE_KEYFRAME       = '{"time":%g,"pos":[%g,%g,%g],"rot":[%g,%g,%g,%g]}'
-    #TEMPLATE_KEYFRAME_POS   = '{"time":%g,"pos":[%g,%g,%g]}'
-    #TEMPLATE_KEYFRAME_ROT   = '{"time":%g,"rot":[%g,%g,%g,%g]}'
-
-    # only for easier DEBUGGING :)
-
-    TEMPLATE_KEYFRAME_FULL = """\
-                    {
-                        "time":%g,
-                        "pos" :[%g,%g,%g],
-                        "rot" :[%g,%g,%g,%g],
-                        "scl" :[1,1,1]
-                    }\
+    if not PRETTY_KEYFRAMES:
+    
+        TEMPLATE_KEYFRAME_FULL  = '{"time":%g,"pos":[%g,%g,%g],"rot":[%g,%g,%g,%g],"scl":[1,1,1]}'
+        TEMPLATE_KEYFRAME       = '{"time":%g,"pos":[%g,%g,%g],"rot":[%g,%g,%g,%g]}'
+        TEMPLATE_KEYFRAME_POS   = '{"time":%g,"pos":[%g,%g,%g]}'
+        TEMPLATE_KEYFRAME_ROT   = '{"time":%g,"rot":[%g,%g,%g,%g]}'
+    
+    else:
+        # only for easier DEBUGGING :)
+        TEMPLATE_KEYFRAME_FULL = """\
+                        {
+                            "time":%g,
+                            "pos" :[%g,%g,%g],
+                            "rot" :[%g,%g,%g,%g],
+                            "scl" :[1,1,1]
+                        }\
 """
-    TEMPLATE_KEYFRAME = """\
-                    {
-                        "time":%g,
-                        "pos" :[%g,%g,%g],
-                        "rot" :[%g,%g,%g,%g]
-                    }\
-"""
-
-    TEMPLATE_KEYFRAME_POS = """\
-                    {
-                        "time":%g,
-                        "pos" :[%g,%g,%g]
-                    }\
+        TEMPLATE_KEYFRAME = """\
+                        {
+                            "time":%g,
+                            "pos" :[%g,%g,%g],
+                            "rot" :[%g,%g,%g,%g]
+                        }\
 """
 
-    TEMPLATE_KEYFRAME_ROT = """\
-                    {
-                        "time":%g,
-                        "rot" :[%g,%g,%g,%g]
+        TEMPLATE_KEYFRAME_POS = """\
+                        {
+                            "time":%g,
+                            "pos" :[%g,%g,%g]
                     }\
+"""
+
+        TEMPLATE_KEYFRAME_ROT = """\
+                        {
+                            "time":%g,
+                            "rot" :[%g,%g,%g,%g]
+                        }\
 """
 
     for bone_proxy in skeleton.iterBones():
 
+        channels = []
+        for curve in action.fcurves:
+            if bone_proxy.getBoneName() == curve.data_path.split('"')[1]:
+                channels.append( curve )
+		
         keys = []
 
         for frame in range(int(start_frame), int(end_frame / option_frame_step) + 1):
-
-            pos, pchange = position(action, bone_proxy, frame * option_frame_step)
-            rot, rchange = rotation(action, bone_proxy, frame * option_frame_step)
+            
+            pos, pchange = position(channels, bone_proxy, frame * option_frame_step)
+            rot, rchange = rotation(channels, bone_proxy, frame * option_frame_step)
             
             px, py, pz = pos.x, pos.y, pos.z
             rx, ry, rz, rw = rot.x, rot.y, rot.z, rot.w
@@ -907,44 +916,37 @@ def generate_animation(action, skeleton, option_animation_skeletal, option_frame
 
     return animation_string
 
-def position(action, bone_proxy, frame):
-
-    index = -1
+def position(channels, bone_proxy, frame):
+    
     change = False
-
-    bone = bone_proxy.getBone()
-
-    for i in range(len(action.groups)):
-        if action.groups[i].name == bone.name:
-            index = i
 
     position = None
     
-    if index >= 0:
-        for channel in action.groups[index].channels:
+    for channel in channels:
+        
+        if not 'location' in channel.data_path:
+            continue
 
-            if position is None:
-                position = mathutils.Vector((0,0,0))
+        if position is None:
+            position = mathutils.Vector((0,0,0))
 
-            if "location" in channel.data_path:
+        if channel.array_index == 0:
+            for keyframe in channel.keyframe_points:
+                if keyframe.co[0] == frame:
+                    change = True
+            position.x = channel.evaluate(frame)
 
-                if channel.array_index == 0:
-                    for keyframe in channel.keyframe_points:
-                        if keyframe.co[0] == frame:
-                            change = True
-                    position.x = channel.evaluate(frame)
+        if channel.array_index == 1:
+            for keyframe in channel.keyframe_points:
+                if keyframe.co[0] == frame:
+                    change = True
+            position.y = channel.evaluate(frame)
 
-                if channel.array_index == 1:
-                    for keyframe in channel.keyframe_points:
-                        if keyframe.co[0] == frame:
-                            change = True
-                    position.y = channel.evaluate(frame)
-
-                if channel.array_index == 2:
-                    for keyframe in channel.keyframe_points:
-                        if keyframe.co[0] == frame:
-                            change = True
-                    position.z = channel.evaluate(frame)
+        if channel.array_index == 2:
+            for keyframe in channel.keyframe_points:
+                if keyframe.co[0] == frame:
+                    change = True
+            position.z = channel.evaluate(frame)
 
     # if position is None, the rest position is retuned
     
@@ -952,54 +954,47 @@ def position(action, bone_proxy, frame):
 
     return position, change
 
-def rotation(action, bone_proxy, frame):
+def rotation(channels, bone_proxy, frame):
 
     # TODO: Calculate rotation also from rotation_euler channels
-
-    index = -1
+    
     change = False
     
-    bone = bone_proxy.getBone()
-
-    for i in range(len(action.groups)):
-        if action.groups[i].name == bone.name:
-            index = i
-
     rotation = mathutils.Vector((0,0,0,0))
-
+    
     quaternion = None
     
-    if index >= 0:
-        for channel in action.groups[index].channels:
+    for channel in channels:
+        
+        if not 'quaternion' in channel.data_path:
+            continue
+        
+        if quaternion is None:
+            quaternion = mathutils.Quaternion()
+        
+        if channel.array_index == 1:
+            for keyframe in channel.keyframe_points:
+                if keyframe.co[0] == frame:
+                    change = True
+            quaternion.x = channel.evaluate(frame)
 
-            if "quaternion" in channel.data_path:
-                
-                if quaternion is None:
-                    quaternion = mathutils.Quaternion()
-                
-                if channel.array_index == 1:
-                    for keyframe in channel.keyframe_points:
-                        if keyframe.co[0] == frame:
-                            change = True
-                    quaternion.x = channel.evaluate(frame)
+        if channel.array_index == 2:
+            for keyframe in channel.keyframe_points:
+                if keyframe.co[0] == frame:
+                    change = True
+            quaternion.y = channel.evaluate(frame)
 
-                if channel.array_index == 2:
-                    for keyframe in channel.keyframe_points:
-                        if keyframe.co[0] == frame:
-                            change = True
-                    quaternion.y = channel.evaluate(frame)
+        if channel.array_index == 3:
+            for keyframe in channel.keyframe_points:
+                if keyframe.co[0] == frame:
+                    change = True
+            quaternion.z = channel.evaluate(frame)
 
-                if channel.array_index == 3:
-                    for keyframe in channel.keyframe_points:
-                        if keyframe.co[0] == frame:
-                            change = True
-                    quaternion.z = channel.evaluate(frame)
-
-                if channel.array_index == 0:
-                    for keyframe in channel.keyframe_points:
-                        if keyframe.co[0] == frame:
-                            change = True
-                    quaternion.w = channel.evaluate(frame)      
+        if channel.array_index == 0:
+            for keyframe in channel.keyframe_points:
+                if keyframe.co[0] == frame:
+                    change = True
+            quaternion.w = channel.evaluate(frame)      
     
     # if quaternion is None, the rest position is retuned
     
