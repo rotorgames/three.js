@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>three.js misc - lights - point + directional</title>
@@ -35,7 +35,7 @@
 			<p>Canvas renderer is very slow on anything other than Chrome.
 		</div>
 
-		<script src="../build/Three.js"></script>
+		<script src="../build/three.min.js"></script>
 
 		<script src="js/Stats.js"></script>
 
@@ -83,12 +83,10 @@
 				container = document.createElement('div');
 				document.body.appendChild(container);
 
-				scene = new THREE.Scene();
-
 				camera = new THREE.PerspectiveCamera( 75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 100000 );
 				camera.position.z = 500;
 
-				scene.add( camera );
+				scene = new THREE.Scene();
 
 				// Spheres
 
@@ -163,6 +161,23 @@
 
 				bcanvas.addEventListener("click", toggleCanvas, false);
 				bwebgl.addEventListener("click", toggleWebGL, false);
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				SCREEN_WIDTH = window.innerWidth / 2;
+				SCREEN_HEIGHT = window.innerHeight;
+
+				camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+				camera.updateProjectionMatrix();
+
+				if ( canvasRenderer ) canvasRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+				if ( webglRenderer ) webglRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 
 			}
 

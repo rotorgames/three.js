@@ -45,8 +45,7 @@ THREE.ShaderGodRays = {
 
 			tInput: {
 				type: "t",
-				value: 0,
-				texture: null
+				value: null
 			},
 
 			fStepSize: {
@@ -67,7 +66,7 @@ THREE.ShaderGodRays = {
 
 			"void main() {",
 
-				"vUv = vec2( uv.x, 1.0 - uv.y );",
+				"vUv = uv;",
 				"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
 			"}"
@@ -148,14 +147,12 @@ THREE.ShaderGodRays = {
 
 			tColors: {
 				type: "t",
-				value: 0,
-				texture: null
+				value: null
 			},
 
 			tGodRays: {
 				type: "t",
-				value: 1,
-				texture: null
+				value: null
 			},
 
 			fGodRayIntensity: {
@@ -176,7 +173,7 @@ THREE.ShaderGodRays = {
 
 			"void main() {",
 
-				"vUv = vec2( uv.x, 1.0 - uv.y );",
+				"vUv = uv;",
 				"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
 			"}"
@@ -246,7 +243,7 @@ THREE.ShaderGodRays = {
 
 			"void main() {",
 
-				"vUv = vec2( uv.x, 1.0 - uv.y );",
+				"vUv = uv;",
 				"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
 			"}"

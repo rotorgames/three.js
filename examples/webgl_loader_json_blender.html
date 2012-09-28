@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>three.js webgl - collada - blender</title>
@@ -32,7 +32,7 @@
 			monster by <a href="http://www.3drt.com/downloads.htm" target="_blank">3drt</a>
 		</div>
 
-		<script src="../build/Three.js"></script>
+		<script src="../build/three.min.js"></script>
 
 		<script src="../src/loaders/LoadingMonitor.js"></script>
 		<script src="../src/loaders/GeometryLoader.js"></script>
@@ -59,7 +59,7 @@
 
 			var loader = new THREE.ColladaLoader();
 			loader.options.convertUpAxis = true;
-			loader.load( 'models/collada/monster/monster.dae', function colladaReady( collada ) {
+			loader.load( 'models/collada/monster/monster.dae', function ( collada ) {
 
 				dae = collada.scene;
 				skin = collada.skins[ 0 ];
@@ -78,13 +78,11 @@
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				scene = new THREE.Scene();
-				scene.fog = new THREE.FogExp2( 0x000000, 0.035 );
-
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 2000 );
 				camera.position.set( 2, 4, 5 );
-				scene.add( camera );
 
+				scene = new THREE.Scene();
+				scene.fog = new THREE.FogExp2( 0x000000, 0.035 );
 
 				// Add Blender exported Collada model
 

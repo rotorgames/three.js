@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>three.js webgl - geometry - text</title>
@@ -33,13 +33,12 @@
 			<span class="button" id="font">change font</span>,
 			<span class="button" id="weight">change weight</span>,
 			<span class="button" id="bevel">change bevel</span>,
-			<span class="button" id="bend">bend</span>,
 			<span class="button" id="postprocessing">change postprocessing</span>,
 			<a id="permalink" href="#">permalink</a>
 		</div>
 
 
-		<script src="../build/Three.js"></script>
+		<script src="../build/three.min.js"></script>
 
 		<script src="js/ShaderExtras.js"></script>
 
@@ -77,6 +76,7 @@
 			var camera, cameraTarget, scene, renderer;
 
 			var composer;
+			var effectFXAA;
 
 			var textMesh1, textMesh2, textGeo, faceMaterial, textMaterialFront, textMaterialSide, parent;
 
@@ -94,27 +94,29 @@
 				bevelSize = 1.5,
 				bevelSegments = 3,
 				bevelEnabled = true,
-				bend = true,
 
-				font = "optimer", 		// helvetiker, optimer, gentilis, droid sans, droid serif
-				weight = "bold",		// normal bold
-				style = "normal";		// normal italic
+				font = "optimer", // helvetiker, optimer, gentilis, droid sans, droid serif
+				weight = "bold", // normal bold
+				style = "normal"; // normal italic
 
 			var mirror = true;
 
 			var fontMap = {
-			"helvetiker"  : 0,
-			"optimer"  	  : 1,
-			"gentilis" 	  : 2,
-			"droid sans"  : 3,
-			"droid serif" : 4
+
+				"helvetiker": 0,
+				"optimer": 1,
+				"gentilis": 2,
+				"droid sans": 3,
+				"droid serif": 4
 
 			};
 
 			var weightMap = {
-			"normal"	: 0,
-			"bold"		: 1
-			}
+
+				"normal": 0,
+				"bold": 1
+
+			};
 
 			var reverseFontMap = {};
 			var reverseWeightMap = {};
@@ -158,18 +160,17 @@
 
 				permalink = document.getElementById( "permalink" );
 
-				// SCENE
-
-				scene = new THREE.Scene();
-				scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
-
 				// CAMERA
 
 				camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 1500 );
 				camera.position.set( 0, 400, 700 );
-				scene.add( camera );
 
 				cameraTarget = new THREE.Vector3( 0, 150, 0 );
+
+				// SCENE
+
+				scene = new THREE.Scene();
+				scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
 
 				// LIGHTS
 
@@ -196,8 +197,7 @@
 					var weighthash = hash.substring( 7, 8 );
 					var pphash 	   = hash.substring( 8, 9 );
 					var bevelhash  = hash.substring( 9, 10 );
-					var bendhash   = hash.substring( 10, 11 );
-					var texthash   = hash.substring( 12 );
+					var texthash   = hash.substring( 10 );
 
 					hex = colorhash;
 					pointLight.color.setHex( parseInt( colorhash, 16 ) );
@@ -207,7 +207,6 @@
 
 					postprocessing.enabled = parseInt( pphash );
 					bevelEnabled = parseInt( bevelhash );
-					bend = parseInt( bendhash );
 
 					text = decodeURI( texthash );
 
@@ -234,6 +233,7 @@
 
 				var plane = new THREE.Mesh( new THREE.PlaneGeometry( 10000, 10000 ), new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5, transparent: true } ) );
 				plane.position.y = 100;
+				plane.rotation.x = - Math.PI / 2;
 				scene.add( plane );
 
 				// RENDERER
@@ -321,13 +321,6 @@
 
 				}, false );
 
-				document.getElementById( "bend" ).addEventListener( 'click', function() {
-
-					bend = !bend;
-					refreshText();
-
-				}, false );
-
 				document.getElementById( "postprocessing" ).addEventListener( 'click', function() {
 
 					postprocessing.enabled = !postprocessing.enabled;
@@ -343,9 +336,13 @@
 				var renderModel = new THREE.RenderPass( scene, camera );
 				var effectBloom = new THREE.BloomPass( 0.25 );
 				var effectFilm = new THREE.FilmPass( 0.5, 0.125, 2048, false );
-				var effectFXAA = new THREE.ShaderPass( THREE.ShaderExtras[ "fxaa" ] );
 
-				effectFXAA.uniforms[ 'resolution' ].value.set( 1 / window.innerWidth, 1 / window.innerHeight );
+				effectFXAA = new THREE.ShaderPass( THREE.ShaderExtras[ "fxaa" ] );
+
+				var width = window.innerWidth || 2;
+				var height = window.innerHeight || 2;
+
+				effectFXAA.uniforms[ 'resolution' ].value.set( 1 / width, 1 / height );
 
 				effectFilm.renderToScreen = true;
 
@@ -355,6 +352,26 @@
 				composer.addPass( effectFXAA );
 				composer.addPass( effectBloom );
 				composer.addPass( effectFilm );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				composer.reset();
+
+				effectFXAA.uniforms[ 'resolution' ].value.set( 1 / window.innerWidth, 1 / window.innerHeight );
 
 			}
 
@@ -368,8 +385,7 @@
 
 			function updatePermalink() {
 
-				var link = hex + fontMap[ font ] + weightMap[ weight ] + boolToNum( postprocessing.enabled ) + boolToNum( bevelEnabled )
-				+ boolToNum( bend ) + "#" + encodeURI( text );
+				var link = hex + fontMap[ font ] + weightMap[ weight ] + boolToNum( postprocessing.enabled ) + boolToNum( bevelEnabled ) + "#" + encodeURI( text );
 
 				permalink.href = "#" + link;
 				window.location.hash = link;
@@ -438,8 +454,6 @@
 					bevelThickness: bevelThickness,
 					bevelSize: bevelSize,
 					bevelEnabled: bevelEnabled,
-
-					bend: bend,
 
 					material: 0,
 					extrudeMaterial: 1

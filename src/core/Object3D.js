@@ -1,5 +1,5 @@
 /**
- * @author mr.doob / http://mrdoob.com/
+ * @author mrdoob / http://mrdoob.com/
  * @author mikael emtinger / http://gomo.se/
  * @author alteredq / http://alteredqualia.com/
  */
@@ -9,6 +9,7 @@ THREE.Object3D = function () {
 	this.id = THREE.Object3DCount ++;
 
 	this.name = '';
+	this.properties = {};
 
 	this.parent = undefined;
 	this.children = [];
@@ -19,9 +20,6 @@ THREE.Object3D = function () {
 	this.rotation = new THREE.Vector3();
 	this.eulerOrder = 'XYZ';
 	this.scale = new THREE.Vector3( 1, 1, 1 );
-
-	this.doubleSided = false;
-	this.flipSided = false;
 
 	this.renderDepth = null;
 
@@ -61,10 +59,10 @@ THREE.Object3D.prototype = {
 		this.matrix.multiply( matrix, this.matrix );
 
 		this.scale.getScaleFromMatrix( this.matrix );
-		
+
 		var mat = new THREE.Matrix4().extractRotation( this.matrix );
 		this.rotation.setEulerFromRotationMatrix( mat, this.eulerOrder );
-		
+
 		this.position.getPositionFromMatrix( this.matrix );
 
 	},
@@ -94,6 +92,18 @@ THREE.Object3D.prototype = {
 
 	},
 
+	localToWorld: function ( vector ) {
+
+		return this.matrixWorld.multiplyVector3( vector );
+
+	},
+
+	worldToLocal: function ( vector ) {
+
+		return THREE.Object3D.__m1.getInverse( this.matrixWorld ).multiplyVector3( vector );
+
+	},
+
 	lookAt: function ( vector ) {
 
 		// TODO: Add hierarchy support.
@@ -117,7 +127,7 @@ THREE.Object3D.prototype = {
 
 		}
 
-		if ( object instanceof THREE.Object3D ) { // && this.children.indexOf( object ) === - 1
+		if ( object instanceof THREE.Object3D ) {
 
 			if ( object.parent !== undefined ) {
 
@@ -209,17 +219,33 @@ THREE.Object3D.prototype = {
 
 	},
 
+	getDescendants: function ( array ) {
+
+		if ( array === undefined ) array = [];
+
+		Array.prototype.push.apply( array, this.children );
+
+		for ( var i = 0, l = this.children.length; i < l; i ++ ) {
+
+			this.children[ i ].getDescendants( array );
+
+		};
+
+		return array;
+
+	},
+
 	updateMatrix: function () {
 
 		this.matrix.setPosition( this.position );
 
-		if ( this.useQuaternion )  {
+		if ( this.useQuaternion === false )  {
 
-			this.matrix.setRotationFromQuaternion( this.quaternion );
+			this.matrix.setRotationFromEuler( this.rotation, this.eulerOrder );
 
 		} else {
 
-			this.matrix.setRotationFromEuler( this.rotation, this.eulerOrder );
+			this.matrix.setRotationFromQuaternion( this.quaternion );
 
 		}
 
@@ -236,19 +262,17 @@ THREE.Object3D.prototype = {
 
 	updateMatrixWorld: function ( force ) {
 
-		this.matrixAutoUpdate && this.updateMatrix();
+		if ( this.matrixAutoUpdate === true ) this.updateMatrix();
 
-		// update matrixWorld
+		if ( this.matrixWorldNeedsUpdate === true || force === true ) {
 
-		if ( this.matrixWorldNeedsUpdate || force ) {
+			if ( this.parent === undefined ) {
 
-			if ( this.parent ) {
-
-				this.matrixWorld.multiply( this.parent.matrixWorld, this.matrix );
+				this.matrixWorld.copy( this.matrix );
 
 			} else {
 
-				this.matrixWorld.copy( this.matrix );
+				this.matrixWorld.multiply( this.parent.matrixWorld, this.matrix );
 
 			}
 
@@ -268,15 +292,9 @@ THREE.Object3D.prototype = {
 
 	},
 
-	worldToLocal: function ( vector ) {
+	clone: function () {
 
-		return THREE.Object3D.__m1.getInverse( this.matrixWorld ).multiplyVector3( vector );
-
-	},
-
-	localToWorld: function ( vector ) {
-
-		return this.matrixWorld.multiplyVector3( vector );
+		// TODO
 
 	}
 

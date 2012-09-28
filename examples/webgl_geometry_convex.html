@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>three.js webgl - convex geometry</title>
@@ -15,7 +15,7 @@
 	</head>
 	<body>
 
-		<script src="../build/Three.js"></script>
+		<script src="../build/three.min.js"></script>
 		<script src="js/Detector.js"></script>
 		<script src="js/Stats.js"></script>
 
@@ -35,11 +35,10 @@
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				scene = new THREE.Scene();
-
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
 				camera.position.y = 400;
-				scene.add( camera );
+
+				scene = new THREE.Scene();
 
 				var light, object, materials;
 
@@ -49,13 +48,18 @@
 				light.position.set( 0, 1, 0 );
 				scene.add( light );
 
+				var map = THREE.ImageUtils.loadTexture( 'textures/ash_uvgrid01.jpg' );
+				map.wrapS = map.wrapT = THREE.RepeatWrapping;
+				map.anisotropy = 16;
+
 				materials = [
-					new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: THREE.ImageUtils.loadTexture( 'textures/ash_uvgrid01.jpg' ) } ),
+					new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map } ),
 					new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, transparent: true, opacity: 0.1 } )
 				];
 
 
 				// tetrahedron
+
 				var points = [
 					new THREE.Vector3( 100, 0, 0 ),
 					new THREE.Vector3( 0, 100, 0 ),
@@ -68,6 +72,7 @@
 				scene.add( object );
 
 				// cube
+
 				var points = [
 					new THREE.Vector3( 50, 50, 50 ),
 					new THREE.Vector3( 50, 50, -50 ),
@@ -84,9 +89,12 @@
 				scene.add( object );
 
 				// random convex
+
 				points = [];
-				for ( var i = 0; i < 30; i++ ) {
+				for ( var i = 0; i < 30; i ++ ) {
+
 					points.push( randomPointInSphere( 50 ) );
+
 				}
 
 				object = THREE.SceneUtils.createMultiMaterialObject( new THREE.ConvexGeometry( points ), materials );
@@ -113,12 +121,25 @@
 				stats.domElement.style.top = '0px';
 				container.appendChild( stats.domElement );
 
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
 			}
 
 
 			function randomPointInSphere( radius ) {
 
-				return new THREE.Vector3( 
+				return new THREE.Vector3(
 					( Math.random() - 0.5 ) * 2 * radius,
 					( Math.random() - 0.5 ) * 2 * radius,
 					( Math.random() - 0.5 ) * 2 * radius
@@ -148,8 +169,8 @@
 
 					var object = scene.children[ i ];
 
-					object.rotation.x += 0.01;
-					object.rotation.y += 0.005;
+					object.rotation.x = timer * 5;
+					object.rotation.y = timer * 2.5;
 
 				}
 

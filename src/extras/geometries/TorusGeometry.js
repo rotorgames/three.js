@@ -1,6 +1,6 @@
 /**
  * @author oosmoxiecode
- * @author mr.doob / http://mrdoob.com/
+ * @author mrdoob / http://mrdoob.com/
  * based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3DLite/src/away3dlite/primitives/Torus.as?r=2888
  */
 
@@ -35,7 +35,7 @@ THREE.TorusGeometry = function ( radius, tube, segmentsR, segmentsT, arc ) {
 
 			this.vertices.push( vertex );
 
-			uvs.push( new THREE.UV( i / this.segmentsT, 1 - j / this.segmentsR ) );
+			uvs.push( new THREE.UV( i / this.segmentsT, j / this.segmentsR ) );
 			normals.push( vertex.clone().subSelf( center ).normalize() );
 
 		}
@@ -69,5 +69,4 @@ THREE.TorusGeometry = function ( radius, tube, segmentsR, segmentsT, arc ) {
 
 };
 
-THREE.TorusGeometry.prototype = new THREE.Geometry();
-THREE.TorusGeometry.prototype.constructor = THREE.TorusGeometry;
+THREE.TorusGeometry.prototype = Object.create( THREE.Geometry.prototype );

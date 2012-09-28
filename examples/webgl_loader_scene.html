@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>three.js webgl - io - scene loader</title>
@@ -147,7 +147,11 @@
 			</center>
 		</div>
 
-		<script src="../build/Three.js"></script>
+		<script src="../build/three.min.js"></script>
+
+		<script src="js/loaders/ctm/lzma.js"></script>
+		<script src="js/loaders/ctm/ctm.js"></script>
+		<script src="js/loaders/ctm/CTMLoader.js"></script>
 
 		<script src="js/Detector.js"></script>
 		<script src="js/Stats.js"></script>
@@ -168,6 +172,11 @@
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
+
+			var rotatingObjects = [];
+			var morphAnimatedObjects = [];
+
+			var clock = new THREE.Clock();
 
 			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
@@ -190,14 +199,14 @@
 				for ( m in result.materials ) {
 
 					material = result.materials[ m ];
-					if ( ! ( material instanceof THREE.MeshFaceMaterial ) ) {
+					if ( ! ( material instanceof THREE.MeshFaceMaterial || material instanceof THREE.ShaderMaterial || material.morphTargets ) ) {
 
 						if( !material.program ) {
 
-							console.log(m);
 							renderer.initMaterial( material, result.scene.__lights, result.scene.fog );
 
 							count += 1;
+
 							if( count > pieces ) {
 
 								//console.log("xxxxxxxxx");
@@ -219,13 +228,18 @@
 				document.body.appendChild( container );
 
 				var loadScene = createLoadScene();
-				scene  = loadScene.scene;
+
 				camera = loadScene.camera;
+				scene = loadScene.scene;
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 				renderer.domElement.style.position = "relative";
 				container.appendChild( renderer.domElement );
+
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+				renderer.physicallyBasedShading = true;
 
 				stats = new Stats();
 				stats.domElement.style.position = 'absolute';
@@ -274,7 +288,7 @@
 
 				}
 
-				var callbackFinished = function( result ) {
+				var callbackFinished = function ( result ) {
 
 					loaded = result;
 
@@ -296,7 +310,21 @@
 
 					handle_update( result, 1 );
 
-					console.log( result );
+					THREE.SceneUtils.traverseHierarchy( result.scene, function ( child ) {
+
+						if ( child.properties.rotating === true ) {
+
+							rotatingObjects.push( child );
+
+						}
+
+						if ( child instanceof THREE.MorphAnimMesh ) {
+
+							morphAnimatedObjects.push( child );
+
+						}
+
+					} );
 
 				}
 
@@ -304,12 +332,30 @@
 
 				var loader = new THREE.SceneLoader();
 
+				loader.addGeometryHandler( "ctm", THREE.CTMLoader );
+
 				loader.callbackSync = callbackSync;
 				loader.callbackProgress = callbackProgress;
 
 				loader.load( "scenes/test_scene.js", callbackFinished );
 
 				$( "plus_exp" ).addEventListener( 'click', createToggle( "exp" ), false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
 
 			}
 
@@ -323,13 +369,11 @@
 
 				$( "progress" ).style.display = "none";
 
-				scene = loaded.scene;
 				camera = loaded.currentCamera;
-
-				scene.add( camera );
-
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
+
+				scene = loaded.scene;
 
 				renderer.setClearColor( loaded.bgColor, loaded.bgAlpha );
 
@@ -404,10 +448,29 @@
 
 			function render() {
 
+				var delta = clock.getDelta();
+
 				camera.position.x += ( mouseX - camera.position.x ) * .001;
 				camera.position.y += ( - mouseY - camera.position.y ) * .001;
 
 				camera.lookAt( scene.position );
+
+				for ( var i = 0; i < rotatingObjects.length; i ++ ) {
+
+					var object = rotatingObjects[ i ];
+
+					if ( object.properties.rotateX ) object.rotation.x += 1 * delta;
+					if ( object.properties.rotateY ) object.rotation.y += 0.5 * delta;
+
+				}
+
+				for ( var i = 0; i < morphAnimatedObjects.length; i ++ ) {
+
+					var object = morphAnimatedObjects[ i ];
+
+					object.updateAnimation( 1000 * delta );
+
+				}
 
 				renderer.render( scene, camera );
 

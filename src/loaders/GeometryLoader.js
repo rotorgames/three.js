@@ -38,7 +38,7 @@ THREE.GeometryLoader.prototype = {
 			if ( event.target.responseText ) {
 
 				geometry = scope.parse( JSON.parse( event.target.responseText ), monitor );
-				
+
 			} else {
 
 				scope.dispatchEvent( { type: 'error', message: 'Invalid file [' + url + ']' } );
@@ -110,8 +110,8 @@ THREE.GeometryLoader.prototype = {
 
 						where[ name ].repeat.set( repeat[ 0 ], repeat[ 1 ] );
 
-						if ( repeat[ 0 ] != 1 ) where[ name ].wrapS = THREE.RepeatWrapping;
-						if ( repeat[ 1 ] != 1 ) where[ name ].wrapT = THREE.RepeatWrapping;
+						if ( repeat[ 0 ] !== 1 ) where[ name ].wrapS = THREE.RepeatWrapping;
+						if ( repeat[ 1 ] !== 1 ) where[ name ].wrapT = THREE.RepeatWrapping;
 
 					}
 
@@ -179,7 +179,7 @@ THREE.GeometryLoader.prototype = {
 				// defaults
 
 				var mtype = "MeshLambertMaterial";
-				var mpars = { color: 0xeeeeee, opacity: 1.0, map: null, lightMap: null, normalMap: null, wireframe: m.wireframe };
+				var mpars = { color: 0xeeeeee, opacity: 1.0, map: null, lightMap: null, normalMap: null, bumpMap: null, wireframe: false };
 
 				// parameters from model file
 
@@ -268,6 +268,30 @@ THREE.GeometryLoader.prototype = {
 
 				}
 
+				if ( m.visible !== undefined ) {
+
+					mpars.visible = m.visible;
+
+				}
+
+				if ( m.flipSided !== undefined ) {
+
+					mpars.side = THREE.BackSide;
+
+				}
+
+				if ( m.doubleSided !== undefined ) {
+
+					mpars.side = THREE.DoubleSide;
+
+				}
+
+				if ( m.wireframe !== undefined ) {
+
+					mpars.wireframe = m.wireframe;
+
+				}
+
 				// textures
 
 				if ( m.mapDiffuse ) {
@@ -279,6 +303,12 @@ THREE.GeometryLoader.prototype = {
 				if ( m.mapLight ) {
 
 					createTexture( mpars, "lightMap", m.mapLight, m.mapLightRepeat, m.mapLightOffset, m.mapLightWrap );
+
+				}
+
+				if ( m.mapBump ) {
+
+					createTexture( mpars, "bumpMap", m.mapBump, m.mapBumpRepeat, m.mapBumpOffset, m.mapBumpWrap );
 
 				}
 
@@ -301,31 +331,31 @@ THREE.GeometryLoader.prototype = {
 					var shader = THREE.ShaderUtils.lib[ "normal" ];
 					var uniforms = THREE.UniformsUtils.clone( shader.uniforms );
 
-					uniforms[ "tNormal" ].texture = mpars.normalMap;
+					uniforms[ "tNormal" ].value = mpars.normalMap;
 
 					if ( m.mapNormalFactor ) {
 
-						uniforms[ "uNormalScale" ].value = m.mapNormalFactor;
+						uniforms[ "uNormalScale" ].value.set( m.mapNormalFactor, m.mapNormalFactor );
 
 					}
 
 					if ( mpars.map ) {
 
-						uniforms[ "tDiffuse" ].texture = mpars.map;
+						uniforms[ "tDiffuse" ].value = mpars.map;
 						uniforms[ "enableDiffuse" ].value = true;
 
 					}
 
 					if ( mpars.specularMap ) {
 
-						uniforms[ "tSpecular" ].texture = mpars.specularMap;
+						uniforms[ "tSpecular" ].value = mpars.specularMap;
 						uniforms[ "enableSpecular" ].value = true;
 
 					}
 
 					if ( mpars.lightMap ) {
 
-						uniforms[ "tAO" ].texture = mpars.lightMap;
+						uniforms[ "tAO" ].value = mpars.lightMap;
 						uniforms[ "enableAO" ].value = true;
 
 					}
@@ -368,7 +398,7 @@ THREE.GeometryLoader.prototype = {
 			return value & ( 1 << position );
 
 		}
-	
+
 		var faces = data.faces;
 		var vertices = data.vertices;
 		var normals = data.normals;

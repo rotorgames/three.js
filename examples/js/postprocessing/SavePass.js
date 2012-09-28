@@ -2,7 +2,7 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.SavePass = function( renderTarget ) {
+THREE.SavePass = function ( renderTarget ) {
 
 	var shader = THREE.ShaderExtras[ "screen" ];
 
@@ -39,7 +39,7 @@ THREE.SavePass.prototype = {
 
 		if ( this.uniforms[ this.textureID ] ) {
 
-			this.uniforms[ this.textureID ].texture = readBuffer;
+			this.uniforms[ this.textureID ].value = readBuffer;
 
 		}
 

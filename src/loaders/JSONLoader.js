@@ -9,8 +9,7 @@ THREE.JSONLoader = function ( showStatus ) {
 
 };
 
-THREE.JSONLoader.prototype = new THREE.Loader();
-THREE.JSONLoader.prototype.constructor = THREE.JSONLoader;
+THREE.JSONLoader.prototype = Object.create( THREE.Loader.prototype );
 
 THREE.JSONLoader.prototype.load = function ( url, callback, texturePath ) {
 
@@ -81,8 +80,6 @@ THREE.JSONLoader.prototype.loadAjaxJSON = function ( context, url, callback, tex
 	};
 
 	xhr.open( "GET", url, true );
-	if ( xhr.overrideMimeType ) xhr.overrideMimeType( "text/plain; charset=x-user-defined" );
-	xhr.setRequestHeader( "Content-Type", "text/plain" );
 	xhr.send( null );
 
 };

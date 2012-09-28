@@ -1,5 +1,5 @@
 /**
- * @author mr.doob / http://mrdoob.com/
+ * @author mrdoob / http://mrdoob.com/
  */
 
 THREE.Line = function ( geometry, material, type ) {
@@ -25,5 +25,4 @@ THREE.Line = function ( geometry, material, type ) {
 THREE.LineStrip = 0;
 THREE.LinePieces = 1;
 
-THREE.Line.prototype = new THREE.Object3D();
-THREE.Line.prototype.constructor = THREE.Line;
+THREE.Line.prototype = Object.create( THREE.Object3D.prototype );

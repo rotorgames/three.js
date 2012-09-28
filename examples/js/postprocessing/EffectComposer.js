@@ -2,7 +2,7 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.EffectComposer = function( renderer, renderTarget ) {
+THREE.EffectComposer = function ( renderer, renderTarget ) {
 
 	this.renderer = renderer;
 
@@ -10,8 +10,11 @@ THREE.EffectComposer = function( renderer, renderTarget ) {
 
 	if ( this.renderTarget1 === undefined ) {
 
+		var width = window.innerWidth || 1;
+		var height = window.innerHeight || 1;
+
 		this.renderTargetParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false };
-		this.renderTarget1 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, this.renderTargetParameters );
+		this.renderTarget1 = new THREE.WebGLRenderTarget( width, height, this.renderTargetParameters );
 
 	}
 
@@ -106,32 +109,15 @@ THREE.EffectComposer.prototype = {
 		this.writeBuffer = this.renderTarget1;
 		this.readBuffer = this.renderTarget2;
 
-		THREE.EffectComposer.quad.scale.set( window.innerWidth, window.innerHeight, 1 );
-
-		THREE.EffectComposer.camera.left = window.innerWidth / - 2;
-		THREE.EffectComposer.camera.right = window.innerWidth / 2;
-		THREE.EffectComposer.camera.top = window.innerHeight / 2;
-		THREE.EffectComposer.camera.bottom = window.innerHeight / - 2;
-
-		THREE.EffectComposer.camera.updateProjectionMatrix();
-
 	}
 
 };
 
 // shared ortho camera
 
-THREE.EffectComposer.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000 );
+THREE.EffectComposer.camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
 
-// shared fullscreen quad scene
-
-THREE.EffectComposer.geometry = new THREE.PlaneGeometry( 1, 1 );
-THREE.EffectComposer.geometry.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
-
-THREE.EffectComposer.quad = new THREE.Mesh( THREE.EffectComposer.geometry, null );
-THREE.EffectComposer.quad.position.z = -100;
-THREE.EffectComposer.quad.scale.set( window.innerWidth, window.innerHeight, 1 );
+THREE.EffectComposer.quad = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), null );
 
 THREE.EffectComposer.scene = new THREE.Scene();
 THREE.EffectComposer.scene.add( THREE.EffectComposer.quad );
-THREE.EffectComposer.scene.add( THREE.EffectComposer.camera );

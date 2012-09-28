@@ -45,70 +45,54 @@ THREE.Quaternion.prototype = {
 		// 	20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/
 		//	content/SpinCalc.m
 	
-		var _order = order || 'XYZ',
-		
-			c1 = Math.cos( v.x / 2 ),
-			c2 = Math.cos( v.y / 2 ),
-			c3 = Math.cos( v.z / 2 ),
-			s1 = Math.sin( v.x / 2 ),
-			s2 = Math.sin( v.y / 2 ),
-			s3 = Math.sin( v.z / 2 );
+		var c1 = Math.cos( v.x / 2 );
+		var c2 = Math.cos( v.y / 2 );
+		var c3 = Math.cos( v.z / 2 );
+		var s1 = Math.sin( v.x / 2 );
+		var s2 = Math.sin( v.y / 2 );
+		var s3 = Math.sin( v.z / 2 );
+
+		if ( order === undefined || order === 'XYZ' ) {
+
+			this.x = s1 * c2 * c3 + c1 * s2 * s3;
+			this.y = c1 * s2 * c3 - s1 * c2 * s3;
+			this.z = c1 * c2 * s3 + s1 * s2 * c3;
+			this.w = c1 * c2 * c3 - s1 * s2 * s3;
+
+		} else if ( order === 'YXZ' ) {
+	
+			this.x = s1 * c2 * c3 + c1 * s2 * s3;
+			this.y = c1 * s2 * c3 - s1 * c2 * s3;
+			this.z = c1 * c2 * s3 - s1 * s2 * c3;
+			this.w = c1 * c2 * c3 + s1 * s2 * s3;
 				
-		switch ( _order ) {
+		} else if ( order === 'ZXY' ) {
 	
-			case 'YXZ':
-	
-				this.x = s1 * c2 * c3 + c1 * s2 * s3;
-				this.y = c1 * s2 * c3 - s1 * c2 * s3;
-				this.z = c1 * c2 * s3 - s1 * s2 * c3;
-				this.w = c1 * c2 * c3 + s1 * s2 * s3;
-	
-				break;
+			this.x = s1 * c2 * c3 - c1 * s2 * s3;
+			this.y = c1 * s2 * c3 + s1 * c2 * s3;
+			this.z = c1 * c2 * s3 + s1 * s2 * c3;
+			this.w = c1 * c2 * c3 - s1 * s2 * s3;
 				
-			case 'ZXY':
+		} else if ( order === 'ZYX' ) {
 	
-				this.x = s1 * c2 * c3 - c1 * s2 * s3;
-				this.y = c1 * s2 * c3 + s1 * c2 * s3;
-				this.z = c1 * c2 * s3 + s1 * s2 * c3;
-				this.w = c1 * c2 * c3 - s1 * s2 * s3;
-	
-				break;
+			this.x = s1 * c2 * c3 - c1 * s2 * s3;
+			this.y = c1 * s2 * c3 + s1 * c2 * s3;
+			this.z = c1 * c2 * s3 - s1 * s2 * c3;
+			this.w = c1 * c2 * c3 + s1 * s2 * s3;
 				
-			case 'ZYX':
-	
-				this.x = s1 * c2 * c3 - c1 * s2 * s3;
-				this.y = c1 * s2 * c3 + s1 * c2 * s3;
-				this.z = c1 * c2 * s3 - s1 * s2 * c3;
-				this.w = c1 * c2 * c3 + s1 * s2 * s3;
-	
-				break;
-				
-			case 'YZX':
+		} else if ( order === 'YZX' ) {
 			
-				this.x = s1 * c2 * c3 + c1 * s2 * s3;
-				this.y = c1 * s2 * c3 + s1 * c2 * s3;
-				this.z = c1 * c2 * s3 - s1 * s2 * c3;
-				this.w = c1 * c2 * c3 - s1 * s2 * s3;
-	
-				break;
+			this.x = s1 * c2 * c3 + c1 * s2 * s3;
+			this.y = c1 * s2 * c3 + s1 * c2 * s3;
+			this.z = c1 * c2 * s3 - s1 * s2 * c3;
+			this.w = c1 * c2 * c3 - s1 * s2 * s3;
 				
-			case 'XZY':
+		} else if ( order === 'XZY' ) {
 			
-				this.x = s1 * c2 * c3 - c1 * s2 * s3;
-				this.y = c1 * s2 * c3 - s1 * c2 * s3;
-				this.z = c1 * c2 * s3 + s1 * s2 * c3;
-				this.w = c1 * c2 * c3 + s1 * s2 * s3;
-	
-				break;
-				
-			default: // 'XYZ'
-	
-				this.x = s1 * c2 * c3 + c1 * s2 * s3;
-				this.y = c1 * s2 * c3 - s1 * c2 * s3;
-				this.z = c1 * c2 * s3 + s1 * s2 * c3;
-				this.w = c1 * c2 * c3 - s1 * s2 * s3;
-		
-				break;
+			this.x = s1 * c2 * c3 - c1 * s2 * s3;
+			this.y = c1 * s2 * c3 - s1 * c2 * s3;
+			this.z = c1 * c2 * s3 + s1 * s2 * c3;
+			this.w = c1 * c2 * c3 + s1 * s2 * s3;
 				
 		}
 		
@@ -243,11 +227,13 @@ THREE.Quaternion.prototype = {
 	multiply: function ( a, b ) {
 
 		// from http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/code/index.htm
+		var qax = a.x, qay = a.y, qaz = a.z, qaw = a.w,
+		qbx = b.x, qby = b.y, qbz = b.z, qbw = b.w;
 
-		this.x =  a.x * b.w + a.y * b.z - a.z * b.y + a.w * b.x;
-		this.y = -a.x * b.z + a.y * b.w + a.z * b.x + a.w * b.y;
-		this.z =  a.x * b.y - a.y * b.x + a.z * b.w + a.w * b.z;
-		this.w = -a.x * b.x - a.y * b.y - a.z * b.z + a.w * b.w;
+		this.x =  qax * qbw + qay * qbz - qaz * qby + qaw * qbx;
+		this.y = -qax * qbz + qay * qbw + qaz * qbx + qaw * qby;
+		this.z =  qax * qby - qay * qbx + qaz * qbw + qaw * qbz;
+		this.w = -qax * qbx - qay * qby - qaz * qbz + qaw * qbw;
 
 		return this;
 

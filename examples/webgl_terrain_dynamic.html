@@ -62,7 +62,7 @@
 			<source src="sounds/Five_Armies.ogg" type='audio/ogg'>
 		</audio>
 -->
-		<script src="../build/Three.js"></script>
+		<script src="../build/three.min.js"></script>
 
 		<script src="js/Detector.js"></script>
 		<script src="js/Stats.js"></script>
@@ -278,17 +278,10 @@
 
 				sceneRenderTarget.add( cameraOrtho );
 
-				// SCENE (FINAL)
-
-				scene = new THREE.Scene();
-
-				scene.fog = new THREE.Fog( 0x050505, 2000, 4000 );
-				scene.fog.color.setHSV( 0.102, 0.9, 0.825 );
+				// CAMERA
 
 				camera = new THREE.PerspectiveCamera( 40, SCREEN_WIDTH / SCREEN_HEIGHT, 2, 4000 );
 				camera.position.set( -1200, 800, 1200 );
-
-				scene.add( camera );
 
 				controls = new THREE.TrackballControls( camera );
 				controls.target.set( 0, 0, 0 );
@@ -304,6 +297,12 @@
 				controls.dynamicDampingFactor = 0.15;
 
 				controls.keys = [ 65, 83, 68 ];
+
+				// SCENE (FINAL)
+
+				scene = new THREE.Scene();
+				scene.fog = new THREE.Fog( 0x050505, 2000, 4000 );
+				scene.fog.color.setHSV( 0.102, 0.9, 0.825 );
 
 				// LIGHTS
 
@@ -340,7 +339,7 @@
 
 				uniformsNormal.height.value = 0.05;
 				uniformsNormal.resolution.value.set( rx, ry );
-				uniformsNormal.heightMap.texture = heightMap;
+				uniformsNormal.heightMap.value = heightMap;
 
 				var vertexShader = document.getElementById( 'vertexShader' ).textContent;
 
@@ -369,15 +368,15 @@
 
 				uniformsTerrain = THREE.UniformsUtils.clone( terrainShader.uniforms );
 
-				uniformsTerrain[ "tNormal" ].texture = normalMap;
+				uniformsTerrain[ "tNormal" ].value = normalMap;
 				uniformsTerrain[ "uNormalScale" ].value = 3.5;
 
-				uniformsTerrain[ "tDisplacement" ].texture = heightMap;
+				uniformsTerrain[ "tDisplacement" ].value = heightMap;
 
-				uniformsTerrain[ "tDiffuse1" ].texture = diffuseTexture1;
-				uniformsTerrain[ "tDiffuse2" ].texture = diffuseTexture2;
-				uniformsTerrain[ "tSpecular" ].texture = specularMap;
-				uniformsTerrain[ "tDetail" ].texture = detailTexture;
+				uniformsTerrain[ "tDiffuse1" ].value = diffuseTexture1;
+				uniformsTerrain[ "tDiffuse2" ].value = diffuseTexture2;
+				uniformsTerrain[ "tSpecular" ].value = specularMap;
+				uniformsTerrain[ "tDetail" ].value = detailTexture;
 
 				uniformsTerrain[ "enableDiffuse1" ].value = true;
 				uniformsTerrain[ "enableDiffuse2" ].value = true;
@@ -419,13 +418,11 @@
 
 				quadTarget = new THREE.Mesh( plane, new THREE.MeshBasicMaterial( { color: 0x000000 } ) );
 				quadTarget.position.z = -500;
-				quadTarget.rotation.x = Math.PI / 2;
 				sceneRenderTarget.add( quadTarget );
 
 				// TERRAIN MESH
 
 				var geometryTerrain = new THREE.PlaneGeometry( 6000, 6000, 256, 256 );
-				geometryTerrain.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
 				geometryTerrain.computeFaceNormals();
 				geometryTerrain.computeVertexNormals();
@@ -628,13 +625,13 @@
 
 				} );
 
-				shaderMaterial.uniforms[ "tDiffuse" ].texture = texture;
+				shaderMaterial.uniforms[ "tDiffuse" ].value = texture;
 
 				var sceneTmp = new THREE.Scene();
 
 				var meshTmp = new THREE.Mesh( new THREE.PlaneGeometry( SCREEN_WIDTH, SCREEN_HEIGHT ), shaderMaterial );
 				meshTmp.position.z = -500;
-				 meshTmp.rotation.x = Math.PI / 2;
+
 				sceneTmp.add( meshTmp );
 
 				renderer.render( sceneTmp, cameraOrtho, target, true );

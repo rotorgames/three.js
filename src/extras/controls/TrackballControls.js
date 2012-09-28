@@ -16,7 +16,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	this.enabled = true;
 
-	this.screen = { width: window.innerWidth, height: window.innerHeight, offsetLeft: 0, offsetTop: 0 };
+	this.screen = { width: 0, height: 0, offsetLeft: 0, offsetTop: 0 };
 	this.radius = ( this.screen.width + this.screen.height ) / 4;
 
 	this.rotateSpeed = 1.0;
@@ -61,6 +61,17 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 
 	// methods
+
+	this.handleResize = function () {
+
+		this.screen.width = window.innerWidth;
+		this.screen.height = window.innerHeight;
+
+		this.screen.offsetLeft = 0;
+		this.screen.offsetTop = 0;
+
+		this.radius = ( this.screen.width + this.screen.height ) / 4;
+	};
 
 	this.handleEvent = function ( event ) {
 
@@ -131,7 +142,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 			if ( _this.staticMoving ) {
 
-				_rotateStart = _rotateEnd;
+				_rotateStart.copy( _rotateEnd );
 
 			} else {
 
@@ -154,7 +165,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 			if ( _this.staticMoving ) {
 
-				_zoomStart = _zoomEnd;
+				_zoomStart.copy( _zoomEnd );
 
 			} else {
 
@@ -223,7 +234,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 			_this.rotateCamera();
 
 		}
-		
+
 		if ( !_this.noZoom ) {
 
 			_this.zoomCamera();
@@ -242,8 +253,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		_this.object.lookAt( _this.target );
 
-		if ( lastPosition.distanceTo( _this.object.position ) > 0 ) {
-			
+		if ( lastPosition.distanceToSquared( _this.object.position ) > 0 ) {
+
 			_this.dispatchEvent( changeEvent );
 
 			lastPosition.copy( _this.object.position );
@@ -258,7 +269,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		if ( ! _this.enabled ) return;
 
-		event.preventDefault();
+		//event.preventDefault();
 
 		if ( _state !== STATE.NONE ) {
 
@@ -372,16 +383,40 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	}
 
+	function mousewheel( event ) {
+
+		if ( ! _this.enabled ) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		var delta = 0;
+
+		if ( event.wheelDelta ) { // WebKit / Opera / Explorer 9
+
+			delta = event.wheelDelta / 40;
+
+		} else if ( event.detail ) { // Firefox
+
+			delta = - event.detail / 3;
+
+		}
+
+		_zoomStart.y += ( 1 / delta ) * 0.05;
+
+	}
+
 	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
 
 	this.domElement.addEventListener( 'mousemove', mousemove, false );
 	this.domElement.addEventListener( 'mousedown', mousedown, false );
 	this.domElement.addEventListener( 'mouseup', mouseup, false );
-
-	// this.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false );
-	// this.domElement.addEventListener( 'mousewheel', mousewheel, false );
+	this.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false );
+	this.domElement.addEventListener( 'mousewheel', mousewheel, false );
 
 	window.addEventListener( 'keydown', keydown, false );
 	window.addEventListener( 'keyup', keyup, false );
+
+	this.handleResize();
 
 };

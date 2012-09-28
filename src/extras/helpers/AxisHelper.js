@@ -1,6 +1,6 @@
 /**
  * @author sroucheray / http://sroucheray.org/
- * @author mr.doob / http://mrdoob.com/
+ * @author mrdoob / http://mrdoob.com/
  */
 
 THREE.AxisHelper = function () {
@@ -48,5 +48,4 @@ THREE.AxisHelper = function () {
 
 };
 
-THREE.AxisHelper.prototype = new THREE.Object3D();
-THREE.AxisHelper.prototype.constructor = THREE.AxisHelper;
+THREE.AxisHelper.prototype = Object.create( THREE.Object3D.prototype );

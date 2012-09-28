@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>three.js misc - geometry - polyfield</title>
@@ -14,23 +14,24 @@
 	</head>
 	<body>
 
-		<script src="../build/Three.js"></script>
+		<script src="../build/three.min.js"></script>
 
 		<script src="js/renderers/SVGRenderer.js"></script>
+		<script src="js/renderers/SoftwareRenderer3.js"></script>
 		<script src="js/Stats.js"></script>
 
 		<script src="obj/Qrcode.js"></script>
 
 		<script>
 
-			var SCREEN_WIDTH = window.innerWidth / 3;
-			var SCREEN_HEIGHT = window.innerHeight;
+			var SCREEN_WIDTH = window.innerWidth / 2;
+			var SCREEN_HEIGHT = window.innerHeight / 2;
 			var AMOUNT = 100;
 
 			var container, stats;
 
 			var camera, scene;
-			var canvasRenderer, svgRenderer, webglRenderer;
+			var canvasRenderer, svgRenderer, softwareRenderer, webglRenderer;
 
 			var mesh, group, qrcode;
 
@@ -51,8 +52,6 @@
 				camera.position.z = 500;
 
 				scene = new THREE.Scene();
-
-				scene.add( camera );
 
 				// QRCODE
 
@@ -81,11 +80,9 @@
 
 				// PLANE
 
-				mesh = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } ) );
+				mesh = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, side: THREE.DoubleSide } ) );
 				mesh.position.y = -500;
-				mesh.rotation.x = Math.PI / 2;
 				mesh.scale.x = mesh.scale.y = mesh.scale.z = 2;
-				mesh.doubleSided = true;
 				scene.add( mesh );
 
 				// CYLINDER
@@ -114,7 +111,7 @@
 
 					var face = new THREE.Face3( geometry.vertices.push( v0 ) - 1, geometry.vertices.push( v1 ) - 1, geometry.vertices.push( v2 ) - 1, null, null, geometry.materials.length );
 
-					geometry.materials.push( new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } ) );
+					geometry.materials.push( new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, side: THREE.DoubleSide } ) );
 
 					geometry.faces.push( face );
 
@@ -128,14 +125,7 @@
 				scene.add( group );
 
 				mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
-				mesh.doubleSided = true;
 				group.add( mesh );
-
-				/*
-				mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true, wireframe: true, wireframeLinewidth: 10 } ) );
-				mesh.doubleSided = true;
-				group.add( mesh );
-				*/
 
 				// LIGHTS
 
@@ -143,6 +133,7 @@
 				scene.add( ambient );
 
 				var directional = new THREE.DirectionalLight( 0xffff00 );
+				directional.position.set( - 1, 0.5, 0 );
 				scene.add( directional );
 
 				canvasRenderer = new THREE.CanvasRenderer();
@@ -154,9 +145,12 @@
 				svgRenderer.setQuality( 'low' );
 				container.appendChild( svgRenderer.domElement );
 
-				webglRenderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+				softwareRenderer = new THREE.SoftwareRenderer3();
+				softwareRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+				container.appendChild( softwareRenderer.domElement );
+
+				webglRenderer = new THREE.WebGLRenderer( { antialias: true } );
 				webglRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
-				// webglRenderer.setFaceCulling( 0 );
 				container.appendChild( webglRenderer.domElement );
 
 				stats = new Stats();
@@ -165,6 +159,28 @@
 				container.appendChild( stats.domElement );
 
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				SCREEN_WIDTH = window.innerWidth / 2;
+				SCREEN_HEIGHT = window.innerHeight / 2;
+
+				camera.aspect = SCREEN_WIDTH / window.SCREEN_HEIGHT;
+				camera.updateProjectionMatrix();
+
+				canvasRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+				svgRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+				softwareRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+				webglRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 
 			}
 
@@ -201,6 +217,7 @@
 
 				canvasRenderer.render( scene, camera );
 				svgRenderer.render( scene, camera );
+				softwareRenderer.render( scene, camera );
 				webglRenderer.render( scene, camera );
 
 			}

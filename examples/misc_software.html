@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>three.js - software renderer</title>
@@ -15,7 +15,7 @@
 	</head>
 	<body>
 
-		<script src="../build/Three.js"></script>
+		<script src="../build/three.min.js"></script>
 		<script src="js/renderers/SoftwareRenderer.js"></script>
 		<script src="js/renderers/SoftwareRenderer2.js"></script>
 		<script src="js/renderers/SoftwareRenderer3.js"></script>
@@ -48,15 +48,14 @@
 				info.innerHTML = '<a href="https://github.com/mrdoob/three.js/" target="_blank">three.js<a/> - software renderer<br/>drag to change the point of view';
 				container.appendChild( info );
 
-				scene = new THREE.Scene();
-
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.y = 150;
 				camera.position.z = 600;
-				scene.add( camera );
 
 				controls = new THREE.TrackballControls( camera );
-				
+
+				scene = new THREE.Scene();
+
 				sphere = new THREE.Mesh( new THREE.IcosahedronGeometry( 150, 3 ), new THREE.MeshBasicMaterial() );
 				scene.add( sphere );
 
@@ -64,10 +63,11 @@
 
 				plane = new THREE.Mesh( new THREE.PlaneGeometry( 200, 200 ), new THREE.MeshBasicMaterial( { color: 0xe0e0e0 } ) );
 				plane.position.y = - 150;
+				plane.rotation.x = - Math.PI / 2;
 				scene.add( plane );
 
 				renderer = new THREE.SoftwareRenderer2();
-				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setSize( window.innerWidth || 2, window.innerHeight || 2 );
 
 				container.appendChild( renderer.domElement );
 
@@ -75,6 +75,19 @@
 				stats.domElement.style.position = 'absolute';
 				stats.domElement.style.top = '0px';
 				container.appendChild( stats.domElement );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
 
 			}
 

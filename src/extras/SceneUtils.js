@@ -65,7 +65,7 @@ THREE.SceneUtils = {
 
 		} else if ( source instanceof THREE.SkinnedMesh ) {
 
-			object = new THREE.SkinnedMesh( source.geometry, source.material );
+			object = new THREE.SkinnedMesh( source.geometry, source.material, source.useVertexTexture );
 
 		} else if ( source instanceof THREE.Mesh ) {
 
@@ -147,9 +147,6 @@ THREE.SceneUtils = {
 		object.scale.copy( source.scale );
 
 		object.dynamic = source.dynamic;
-
-		object.doubleSided = source.doubleSided;
-		object.flipSided = source.flipSided;
 
 		object.renderDepth = source.renderDepth;
 

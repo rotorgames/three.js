@@ -1,5 +1,5 @@
 /**
- * @author mr.doob / http://mrdoob.com/
+ * @author mrdoob / http://mrdoob.com/
  * @author alteredq / http://alteredqualia.com/
  * @author mikael emtinger / http://gomo.se/
  */
@@ -46,8 +46,7 @@ THREE.Mesh = function ( geometry, material ) {
 
 }
 
-THREE.Mesh.prototype = new THREE.Object3D();
-THREE.Mesh.prototype.constructor = THREE.Mesh;
+THREE.Mesh.prototype = Object.create( THREE.Object3D.prototype );
 
 
 /*
